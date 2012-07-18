@@ -1,0 +1,33 @@
+http://www.computersolutions.cn/blog/2010/09/efrontwpi-wordpress-integration-plugin-for-efront/comment-page-1/#comment-4810
+
+I think its probably going to be the cookie..
+
+I think I’ll need to make a minor change to load the eFront libraries/global.php directly, so that any change would use their md5 salt du jour.
+
+I’ve made some small changes to do so – see below for what to change.
+Can you try this in your side and see if this works (or gives an error), then let me know!
+Then I can either remedy,or update the plugin zip file to include this.
+
+Open eFrontWPI.php in the wordpress plugins folder, and change the eFrontWPI_set_cookie code to the below.
+
+function eFrontWPI_set_cookie($username,$password) {
+//G_MD5KEY from eFront libraries/globals.php
+//eFront needs a cookie also.
+//define(“G_MD5KEY”, ‘cDWQR#$Rcxsc’);
+
+global $eFrontWPI_options;
+
+$myfile = $eFrontWPI_options['path'] . ‘/libraries/globals.php’;
+
+if (($file_handle = @fopen($myfile, ‘r’)) === false) {
+//Can’t find the globals file
+return new WP_Error(‘eFrontWPI_server_error’, __(‘eFrontWPI: Attempted to load globals.php file, but failed. Does this path look correct: ‘.$myfile));
+}
+else {
+@include $myfile;
+//define(“G_MD5KEY”, ‘cDWQR#$Rcxsc’) should be defined from above include..
+}
+
+setcookie(“cookie_login”, $username,time()+3600,’/');
+setcookie(“cookie_password”, md5($password.G_MD5KEY),time()+3600,’/');
+}
