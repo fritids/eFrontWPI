@@ -77,7 +77,7 @@ function eFrontWPI_authenticate($user, $username, $password) {
 	}
 
 	//Attempt Login
-	$user = get_userdatabylogin($username);
+	$user = get_user_by('login', $user_login);
 
 	if ( !$user || (strtolower($user->user_login) != strtolower($username)) ) 
 	{
