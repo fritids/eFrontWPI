@@ -59,15 +59,15 @@ function eFrontWPI_logout () {
 	return;
 }
 
-function eFrontWPI_authenticate($user, $username, $password) {
+function eFrontWPI_authenticate($user, $user_login, $password) {
 	
 	//Do our basic error checking
 	if ( is_a($user, 'WP_User') ) { return $user; }
 	
-	if ( empty($username) || empty($password) ) {
+	if ( empty($user_login) || empty($password) ) {
 		$error = new WP_Error();
 
-		if ( empty($username) )
+		if ( empty($user_login) )
 			$error->add('empty_username', __('<strong>ERROR</strong>: The username field is empty.'));
 
 		if ( empty($password) )
@@ -79,19 +79,19 @@ function eFrontWPI_authenticate($user, $username, $password) {
 	//Attempt Login
 	$user = get_user_by('login', $user_login);
 
-	if ( !$user || (strtolower($user->user_login) != strtolower($username)) ) 
+	if ( !$user || (strtolower($user->user_login) != strtolower($user_login)) ) 
 	{
-		do_action( 'wp_login_failed', $username );				
+		do_action( 'wp_login_failed', $user_login );				
 		return new WP_Error('invalid_username', __('<strong>eFrontWPI</strong>: Login failed, invalid username.'));
 	}
 	else {
-			eFrontWPI_DoLogin ($user,$username, $password);
+			eFrontWPI_DoLogin ($user,$user_login, $password);
 	}
 }
 
-function eFrontWPI_DoLogin ($user,$username, $password) {
+function eFrontWPI_DoLogin ($user,$user_login, $password) {
 	global $eFrontWPI_options;
-	$result=eFrontWPI_perform_action ("efrontlogin&login=".$username);
+	$result=eFrontWPI_perform_action ("efrontlogin&login=".$user_login);
 	
 	if (is_wp_error($result)) {
    		echo $result->get_error_message();
@@ -106,11 +106,11 @@ function eFrontWPI_DoLogin ($user,$username, $password) {
 	if (strpos($result, 'user does not exist') == true ) {
  		if ($eFrontWPI_options['create_login'] == 'yes') {
     	   	//Add the user if possible.
-        	eFrontWPI_perform_action ("create_user&login=".$username."&password=".$password."&name=".($user->first_name)."&surname=".($user->last_name)."&email=".($user->user_email)."&languages=english");
-    	    eFrontWPI_perform_action ("update_user&login=".$username."&password=".$password."&name=".($user->first_name)."&surname=".($user->last_name)."&email=".($user->user_email)."&languages=english");
+        	eFrontWPI_perform_action ("create_user&login=".$user_login."&password=".$password."&name=".($user->first_name)."&surname=".($user->last_name)."&email=".($user->user_email)."&languages=english");
+    	    eFrontWPI_perform_action ("update_user&login=".$user_login."&password=".$password."&name=".($user->first_name)."&surname=".($user->last_name)."&email=".($user->user_email)."&languages=english");
 	    } 
 	}
-	eFrontWPI_set_cookie($username,$password);
+	eFrontWPI_set_cookie($user_login,$password);
 	return;
 }
 
@@ -205,11 +205,11 @@ function eFrontWPI_delete_cookie () {
     setcookie("cookie_password", "",time()-3600);
     setcookie("PHPSESSID","",time()-3600); //Kill the session id also, or eFront doesn't logout, sigh.
 }
-function eFrontWPI_set_cookie($username,$password) {
+function eFrontWPI_set_cookie($user_login,$password) {
 	//G_MD5KEY from eFront libraries/globals.php
 	//eFront needs a cookie also.
 	define("G_MD5KEY", 'cDWQR#$Rcxsc');
-    setcookie("cookie_login", $username,time()+3600,'/');
+    setcookie("cookie_login", $user_login,time()+3600,'/');
     setcookie("cookie_password", md5($password.G_MD5KEY),time()+3600,'/');
 }
 
