@@ -4,8 +4,8 @@
 Plugin Name: eFront Wordpress Login Integration
 Plugin URI: http://www.computersolutions.cn/blog/eFront Integration/ 
 Description:  Authenticates eFront usernames against Wordpress, and optionally creates a user in eFront.
-Version: 1.0
-Author: Lawrence Sheed. Portions of code based on Skippy Bosco's work on aMember / eFront integration.
+Version: 1.1
+Author: Lawrence Sheed. Portions of code based on Skippy Bosco's work on aMember / eFront integration.  Modified by Michael A. Milazzo (mmilazzo@juniper.net).
 Author URI: http://www.sheed.com
 */
 
@@ -51,6 +51,36 @@ add_action('admin_menu', 'eFrontWPI_admin_actions');
 add_filter('authenticate', 'eFrontWPI_authenticate', 1, 3);
 
 add_action('wp_logout', 'eFrontWPI_logout');
+
+//Added 7/24/2012 by Michael A. Milazzo
+add_action('profile_update', 'jnpr_eFrontWPI_update_sso');
+
+
+//Function added 7/24/2012 by Michael A. Milazzo to ensure the eFront user's password
+//gets updated when it is changed in Wordpress.
+function jnpr_eFrontWPI_update_sso($user_id) {
+	
+	echo "jnpr_eFrontWPI_update_sso invoked!";
+	//this if block came from http://plugins.svn.wordpress.org/wp-http-digest/trunk/wp-http-digest.php 
+	if ( isset( $_POST['pass1'] ) && $_POST['pass1'] != '' && $_POST['pass1'] == $_POST['pass2']) {
+		$newpass_plain = $_POST['pass1'];
+		$current_user = wp_get_current_user();
+		
+		$user = get_user_by('id', $user_id);
+		wp_set_password( $newpass_plain, $user_id );
+		
+		//use the existing code to invoke the eFront API.
+		eFrontWPI_perform_action ("update_user&login=".$user->user_login."&password=".$newpass_plain."&name=".($user->first_name)."&surname=".($user->last_name)."&email=".($user->user_email)."&languages=english");
+		//if the user making the password change is the same as the logged in user, update the cookie values.
+		if($user_id == $current_user->id) { //handle the case where the admin changes someone's profile.
+			eFrontWPI_set_cookie($user->user_login, $newpass_plain);
+			echo "You should have different eFront cookies now... :-)";
+		} else {
+			echo "An admin changed the password for the user... do nothing.";
+		}
+	}
+}
+
 
 //Authenticate function
 
