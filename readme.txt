@@ -1,8 +1,8 @@
 Author  L. Sheed
 Email	Lawrence@computersolutions.cn
 URL		http://www.computersolutions.cn/blog/2010/09/efrontwpi-wordpress-integration-plugin-for-efront/
-Date	02 / Sep / 2010
-Version 1.0
+Date	25 / July / 2012
+Version 1.1
 
 
 Overview     *************************************************************************
@@ -51,5 +51,11 @@ Check if you want a user automatically created.
 * Current eFront token 
 This is a read only field which shows the current eFront API token (if any).
 This is a good way to check if the plugin is working - if you have a token, it should be working.
+
+Changelog
+
+07/25/2012:  Added a function to change the eFront user's password field in the eFront database 
+upon a user profile update.  Without this change, if a user changed their password within WordPress, 
+it wouldn't get changed in eFront and SSO wouldn't work.
 
 
